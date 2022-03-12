@@ -1,0 +1,313 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$this->headScript()->appendFile($this->assetUrl('js/browse.js'));
+$this->htmlElement('body')->appendAttribute('class', 'item resource browse');
+
+$filterLocale = (bool) $this->siteSetting('filter_locale_values');
+$lang = $this->lang();
+
+$query = $this->params()->fromQuery();
+$itemSetShow = isset($itemSet);
+if ($itemSetShow):
+    $this->htmlElement('body')->appendAttribute('class', 'item-set');
+    $query['item_set_id'] = $itemSet->id();
+endif;
+
+//ソート
+$sortHeadings = [
+    [
+        'label' => $translate('Created'),
+        'value' => 'created'
+    ]
+];
+$sortProperties = $this->themeSetting('sort_property');
+if ($sortProperties != "") {
+    $rows = explode("\n", $sortProperties);
+    for ($i = 0; $i < count($rows); $i++) {
+        $row = $rows[$i];
+        $elements = explode(",", $row);
+        if (count($elements) > 1) {
+            array_push($sortHeadings, [
+                'label' => $translate(trim($elements[1])),
+                'value' => $elements[0]
+            ]);
+        }
+    }
+} else {
+    array_push($sortHeadings, [
+        'label' => $translate('Title'),
+        'value' => 'dcterms:title'
+    ]);
+}
+
+//リスト
+$bodyProperties = $this->themeSetting('body_property');
+
+$bodyHeadings = [];
+$rows = explode("\n", $bodyProperties);
+for ($i = 0; $i < count($rows); $i++) {
+    $row = $rows[$i];
+    $elements = explode(",", $row);
+    if (count($elements) > 1) {
+        array_push($bodyHeadings, [
+            'label' => $translate($elements[1]),
+            'value' => $elements[0]
+        ]);
+    }
+}
+
+//レイアウト
+$layoutSetting = $this->themeSetting('browse_layout');
+$gridState = ($layoutSetting == 'togglegrid') ? 'disabled' : '';
+$listState = ($layoutSetting == 'togglelist') ? 'disabled': '';
+$isGrid = (!isset($layoutSetting) || strpos($layoutSetting, 'grid') !== false) ? true : false;
+
+$page = isset($query["page"]) ? intval($query["page"]) : 1;
+
+$headingTerm = $this->siteSetting('browse_heading_property_term');
+$bodyTerm = $this->siteSetting('browse_body_property_term');
+?>
+
+<style>
+    .closed {
+        display: none;
+    }
+
+    .deactive {
+        color: inherit;
+    }
+</style>
+
+<div class="container-fluid mt-4 mb-5">
+
+    <?php if ($itemSetShow): ?>
+    <div class="mb-5 container">
+        <div class="mb-4">
+            <?php echo $this->pageTitle($itemSet->displayTitle(), 2); ?>
+            <!-- <span class="badge rounded-pill p-2 px-3 bg-secondary"><?php echo $translate('Collection'); ?></span>
+            -->
+        </div>
+        <div id="metadata" class="mb-4"
+            style="<?= $page > 1 ? 'display:none;' : '' ?>">
+            <div class="metadata">
+                <?php echo $itemSet->displayValues(); ?>
+            </div>
+        </div>
+        <div class="text-center">
+            <button id="openBtn"
+                style="border-radius: 40px; <?= $page > 1 ? '' : 'display:none;' ?>>"
+                class="btn btn-sm btn-dark"><?= $translate('メタデータを表示'); ?></button>
+            <button id="closeBtn"
+                style="border-radius: 40px; <?= $page > 1 ? 'display:none;' : '' ?>"
+                class="btn btn-sm btn-dark"><?= $translate('隠す'); ?></button>
+        </div>
+    </div>
+    <div class="item-set-items my-3">
+
+        <?php endif; ?>
+
+        <?php echo $this->searchFilters(); ?>
+
+        <div class="row my-4">
+            <div class="col-12 col-md mb-2">
+                <?php echo $this->pagination(); ?>
+            </div>
+            <div class="col-md-auto text-end mb-2">
+                <?php echo $this->sortSelector($sortHeadings); ?>
+            </div>
+            <!-- 表示スタイル -->
+            <div class="col-auto text-end mb-2">
+                <label class="col-form-label">
+
+                    <a id="iconGrid" class="mx-1 deactive" href="#"><i class="fa-solid fa-border-all"></i></a>
+                    <a id="iconList" class="mx-1 deactive" href="#"><i class="fa-solid fa-list"></i></a>
+                </label>
+            </div>
+            <!-- 詳細検索 -->
+            <div class="col-auto text-end mb-2">
+                <?php echo $this->hyperlink($translate('Advanced search'), $this->url('site/resource', ['controller' => 'item', 'action' => 'search'], ['query' => $query], true), ['class' => 'advanced-search btn btn-secondary', 'style' => 'border-radius: 40px;']); ?>
+            </div>
+        </div>
+
+
+        <?php $this->trigger('view.browse.before'); ?>
+
+
+        <!-- divGrid -->
+        <div class="row my-4 closed" id="divGrid">
+            <?php
+
+        foreach ($items as $item):
+            $heading = $headingTerm ? $item->value($headingTerm, ['default' => $translate('[Untitled]'), 'lang' => ($filterLocale ? [$lang, ''] : null)]) : $item->displayTitle(null, ($filterLocale ? [$lang, ''] : null));
+        ?>
+            <div class="col-6 col-md-3">
+                <!-- Card -->
+                <div class="mb-3">
+                    <!-- card -->
+
+                    <!-- Card image -->
+                    <div style="background-color : lightgrey; height : 150px;" class="text-center">
+                        <?php
+                            if ($this->thumbnail($item, 'medium')):
+                        ?>
+                        <?php echo $item->linkRaw($this->thumbnail($item, 'medium', ['style' => 'height : 150px; max-width : 100%;'])); ?>
+                        <?php
+                            else:
+                        ?>
+                        <?php echo $item->linkRaw("<img style='height : 150px; max-width : 100%;'/>"); ?>
+                        <!--  src='".$this->assetUrl('img/noimg.png')."' -->
+                        <?php
+                            endif;
+                        ?>
+                    </div>
+                    <!-- Card content -->
+                    <div class="card-body">
+                        <!-- Title -->
+                        <h5><?php echo $item->link($heading); ?>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+
+
+
+
+        <div id="divList" class="closed">
+            <?php
+           
+
+            foreach ($items as $item):
+
+                $body = "";
+
+                if (count($bodyHeadings) > 0) {
+                    foreach ($bodyHeadings as $bodyHeading) {
+                        $bodyTerm = $bodyHeading["value"];
+                        $value = $bodyTerm ? $item->value($bodyTerm) : $item->displayDescription();
+                        $value = mb_strimwidth($escape($value), 0, 100, "...");
+                        if ($value != "") {
+                            if ($body != "") {
+                                $body = $body.", ";
+                            }
+                            $body .= "<b>".$translate($bodyHeading["label"]).": </b>".$value;
+                        }
+                    }
+                } else {
+                    $body = $bodyTerm ? $item->value($bodyTerm, ['lang' => ($filterLocale ? [$lang, ''] : null)]) : $item->displayDescription(null, ($filterLocale ? [$lang, ''] : null));
+                }
+
+                $heading = $headingTerm ? $item->value($headingTerm, ['default' => $translate('[Untitled]')]) : $item->displayTitle();
+            ?>
+            <div class="mb-4">
+                <!-- card -->
+                <div class="card-body">
+                    <div class="row">
+
+                        <div class="col-2">
+
+                            <?php
+                                    if ($this->thumbnail($item, 'medium')):
+                                ?>
+                            <!-- Card image -->
+                            <div style="background-color : lightgrey; max-height : 150px;"
+                                class="text-center mb-md-0 mb-2">
+                                <?php echo $item->linkRaw($this->thumbnail($item, 'medium', ['style' => 'max-height : 150px; max-width : 100%;'])); ?>
+                            </div>
+                            <?php
+                                    else:
+                                ?>
+                            <?php echo $item->linkRaw("<img style='height : 150px; max-width : 100%;'/>"); ?>
+                            <!--  src='".$this->assetUrl('img/noimg.png')."' -->
+                            <?php
+                                    endif;
+                                ?>
+
+                        </div>
+
+
+                        <div class="col-10">
+                            <!-- Card -->
+                            <!-- Title -->
+                            <h5><?php echo $item->link($heading); ?>
+                            </h5>
+                            <!-- Text -->
+                            <?php if ($body): ?>
+                            <div class="card-text"><?php echo $body; ?>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+
+
+            <?php endforeach; ?>
+        </div>
+
+
+        <div class="my-4">
+            <?php echo $this->pagination(); ?>
+        </div>
+
+        <?php echo ($itemSetShow) ? '</div>' : ''; ?>
+
+    </div>
+
+    <script>
+        let $isGrid = Number(sessionStorage.getItem('omekas-$isGrid') ||
+            <?= $isGrid; ?>
+        );
+
+        if ($isGrid === 1) {
+            clickGrid();
+        } else {
+            clickList();
+        }
+
+        $('#iconList').on('click', function(e) {
+            e.preventDefault();
+            clickList();
+        });
+
+        $('#iconGrid').on('click', function(e) {
+            e.preventDefault();
+            clickGrid();
+        });
+
+        function clickGrid() {
+            $("#divGrid").removeClass("closed")
+            $("#divList").addClass("closed")
+
+            $("#iconList").addClass("deactive")
+            $("#iconGrid").removeClass("deactive")
+
+            sessionStorage.setItem('omekas-$isGrid', 1);
+        }
+
+        function clickList() {
+            $("#divGrid").addClass("closed")
+            $("#divList").removeClass("closed")
+
+            $("#iconList").removeClass("deactive")
+            $("#iconGrid").addClass("deactive")
+
+            sessionStorage.setItem('omekas-$isGrid', 0);
+        }
+
+        $('#openBtn').on('click', function(e) {
+            $("#metadata").show();
+            $("#openBtn").hide();
+            $("#closeBtn").show();
+        });
+
+        $('#closeBtn').on('click', function(e) {
+            $("#metadata").hide();
+            $("#openBtn").show();
+            $("#closeBtn").hide();
+        });
+    </script>

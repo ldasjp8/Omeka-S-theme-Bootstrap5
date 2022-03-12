@@ -1,0 +1,37 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var string $name
+ * @var string $value
+ * @var string $label
+ * @var int $count
+ * @var bool $active
+ * @var string $url
+ * @var array $options
+ * @var \Laminas\View\Helper\EscapeHtml $escapeHtml
+ * @var \Laminas\View\Helper\EscapeHtmlAttr $escapeHtmlAttr
+ * @var \Laminas\View\Helper\TranslatorAwareTrait $translate
+ * @var \AdvancedSearch\View\Helper\FacetLabel $facetLabel
+ */
+
+// Warning: when inactive, don't return anything, in particular don't return any space,
+// else it should be managed in facets.phtml.
+
+if (!$active) {
+    return;
+}
+
+//facet-active
+?>
+
+<?= $escapeHtml(sprintf('%s : %s', $translate($facetLabel($name)), $label)) ?>
+
+&nbsp;
+
+
+<a class="" style="text-decoration: none; color: white;"
+    href="<?= $escapeHtmlAttr($url) ?>"
+    data-facet-name="facet[<?= $escapeHtmlAttr($name) ?>][]"
+    data-facet-value="<?= $escapeHtmlAttr($value) ?>">
+    <i class="fa-solid fa-circle-xmark"></i>
+</a>

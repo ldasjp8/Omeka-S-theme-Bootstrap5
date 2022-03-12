@@ -1,0 +1,31 @@
+<div class="row">
+  <?php foreach ($attachments as $attachment): ?>
+    <div class="col-6 col-md-3">
+      <div class="mb-3">
+        <?php
+        $item = $attachment->item();
+        if ($item):
+          ?>
+          <!-- Card image -->
+          <div style="background-color : lightgrey; height : 150px;" class="text-center">
+            <?php
+            $media = $attachment->media() ?: $item->primaryMedia();
+            if ($media):
+                echo $item->linkRaw($this->thumbnail($media, $this->thumbnailType, ['style' => 'height : 150px; max-width : 100%;']));
+            endif;
+            ?>
+        </div>
+          <div class="card-body">
+            <?php $showTitleOption = $this->showTitleOption; ?>
+            <?php if ($showTitleOption == 'item_title'): ?>
+              <h5 class="card-text"><?php echo $item->link($item->displayTitle()); ?></h5>
+            <?php elseif ($showTitleOption == 'file_name'): ?>
+              <p class="card-text"><?php echo $media->displayTitle(); ?></p>
+            <?php endif; ?>
+          </div>
+        </div>
+
+      <?php endif; ?>
+    </div>
+  <?php endforeach; ?>
+</div>

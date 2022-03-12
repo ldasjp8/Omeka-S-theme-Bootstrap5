@@ -1,0 +1,60 @@
+<?php
+$translate = $this->plugin('translate');
+$from = $offset + 1;
+$to = ($currentPage < $pageCount) ? $offset + $perPage : $totalCount;
+?>
+
+
+<?php if ($totalCount): ?>
+<form method="GET" action="">
+    <div class="row">
+        <div class="col-auto">
+            <label class="col-form-label">
+                <?php echo sprintf($translate('%1$s–%2$s of %3$s'), number_format($from), number_format($to), number_format($totalCount)); ?>
+                <?= $translate('results'); ?>
+            </label>
+        </div>
+
+        <div class="col-auto">
+            <input type="text" name="page" class="page-input-top form-control"
+                value="<?php echo $currentPage; ?>" size="4" <?php echo ($pageCount == 1) ? 'readonly' : ''; ?>
+            aria-label="<?php echo $translate('Page'); ?>">
+
+        </div>
+
+
+        <div class="col-auto">
+            <label class="col-form-label">
+                <?php echo sprintf($translate('/ %s'), $pageCount); ?>
+            </label>
+        </div>
+
+
+        <div class="col-auto">
+            <?php echo $this->queryToHiddenInputs(['page']); ?>
+            <?php
+
+if (strpos($previousPageUrl, '/item?') === false) {
+    $previousQuery = explode("?", $previousPageUrl)[1];
+    $nextQuery = explode("?", $nextPageUrl)[1];
+    $prefix = explode("?", $_SERVER['REQUEST_URI'])[0];
+    $previousPageUrl = $prefix."?".$previousQuery;
+    $nextPageUrl = $prefix."?".$nextQuery;
+}
+?>
+            <a href="<?= $previousPageUrl; ?>"
+                class="btn btn-outline-primary <?= $currentPage != 1 ? "" : "disabled" ?>"><i
+                    class="fa-solid fa-arrow-left"></i></a>
+            <a href="<?= $nextPageUrl; ?>"
+                class="btn btn-outline-primary <?= $currentPage < $pageCount ? "" : "disabled" ?>"><i
+                    class="fa-solid fa-arrow-right"></i></a>
+        </div>
+
+    </div>
+
+</form>
+
+
+<?php else: ?>
+<?php echo $translate('0 results'); ?>
+<?php endif;

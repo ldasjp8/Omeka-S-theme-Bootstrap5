@@ -1,0 +1,149 @@
+<?php
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+$escape = $plugins->get('escapeHtml');
+
+$site = "";
+if ($site = $this->viewModel()->getRoot()->getVariable('site')):
+    $site = $site->title();
+endif;
+
+$accessed = $escape($this->i18n()->dateFormat(new \DateTime(), \Omeka\View\Helper\I18n::DATE_FORMAT_LONG));
+
+$icons = [
+    "twitter" => "fa-brands fa-twitter",
+    "facebook" => "fa-brands fa-facebook",
+    "line" => "fa-brands fa-line",
+    "pocket" => "fa-brands fa-get-pocket",
+    "mail" =>  "fa-solid fa-envelope"
+]
+?>
+<div class="my-4 text-center">
+  <a href="<?= $rdf['uri']; ?>" title="JSON-LD"
+    target="_blank">
+    <img height="24" class="mb-1"
+      src="<?= $rdf['icon']; ?>" />
+  </a>
+
+  <!-- テキスト -->
+  <?php if ($text['show'] and count($text['values']) > 0): ?>
+  <a style="margin-left: 20px;" data-bs-toggle="modal" data-bs-target="#textModal" href="#" title="Text">
+    <img height="24" class="mb-1"
+      src="<?= $asset; ?>/format-text.svg" />
+    <!--<i class="fa-solid fa-file-lines"></i>-->
+  </a>
+  <?php endif; ?>
+
+  <!-- citation -->
+  <a style="margin-left: 20px;" data-bs-toggle="modal" data-bs-target="#citationModal" href="#" title="Citation">
+    <i class="fa-solid fa-quote-right"></i>
+  </a>
+
+  <!-- share -->
+  <a style="margin-left: 20px;" data-bs-toggle="modal" data-bs-target="#shareModal" title="Share" href="#">
+    <i class="fa-solid fa-share-nodes"></i>
+  </a>
+</div>
+
+<!-- Text Modal -->
+<div class="modal fade" id="textModal" tabindex="-1" aria-labelledby="textModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel"><?php echo $translate('Text'); ?>
+        </h5>
+      </div>
+
+      <div class="list-group list-group-flush">
+        <?php foreach ($text["values"] as $k => $v):?>
+        <a href="<?= $v['url']; ?>"
+          target="_blank" class="list-group-item list-group-item-action">
+
+          <img width="24px"
+            title="<?= $v['label'] ?>"
+            src="<?= $v['icon']; ?>" />&nbsp;&nbsp;
+          <?= $v['label'] ?></a>
+        <?php endforeach; ?>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" style="border-radius: 40px;" class="btn btn-sm btn-dark" data-bs-dismiss="modal"><?php echo $translate('Close'); ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="citationModal" tabindex="-1" aria-labelledby="citationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel"><?php echo $translate('Citation'); ?>
+        </h5>
+      </div>
+      <div class="modal-body" id="citing">
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="copy()" style="border-radius: 40px;" class="btn btn-primary"
+          data-bs-dismiss="modal">記載例をコピー</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel"><?php echo $translate('Share'); ?>
+        </h5>
+      </div>
+
+      <div class="list-group list-group-flush">
+        <?php foreach ($share['values'] as $k => $v):?>
+        <a href="<?= $v["url"]; ?>"
+          target="_blank" class="list-group-item list-group-item-action"><i
+            class="<?= $icons[$k] ?>"></i>&nbsp;&nbsp;
+          <?= $v['label'] ?></a>
+        <?php endforeach; ?>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" style="border-radius: 40px;" class="btn btn-sm btn-dark" data-bs-dismiss="modal"><?php echo $translate('Close'); ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  let title = "<?php echo $citation['title']; ?>";
+  let url = "<?php echo $citation['url']; ?>";
+  let site = "<?php echo $site; ?>";
+  let accessed = "<?php echo $accessed; ?>";
+
+  //記載例
+  let text = `“${title}“, ${site}, accessed ${accessed}, ${url}`
+  document.getElementById('citing').textContent = text;
+
+  async function copy() {
+    var listener = function(e) {
+
+      e.clipboardData.setData("text/plain", text);
+      // 本来のイベントをキャンセル
+      e.preventDefault();
+      // 終わったら一応削除
+      document.removeEventListener("copy", listener);
+    }
+
+    // コピーのイベントが発生したときに、クリップボードに書き込むようにしておく
+    document.addEventListener("copy", listener);
+
+    // コピー
+    document.execCommand("copy");
+    alert("<?php echo $translate('Copied'); ?>")
+  }
+</script>

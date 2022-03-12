@@ -1,0 +1,80 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$this->htmlElement('body')->appendAttribute('class', 'item resource show');
+$embedMedia = $this->siteSetting('item_media_embed', false);
+$itemMedia = $item->media();
+?>
+
+<?php $this->trigger('view.show.before'); ?>
+
+<div class="container mt-4 mb-5" style="word-wrap : break-word;">
+
+    <?php echo $this->pageTitle($item->displayTitle(), 3); ?>
+
+    <div class="my-4">
+        <?php $this->trigger('view.show.after'); ?>
+    </div>
+
+    <div class="mt-5 mb-4">
+
+        <div class="card-body pt-4">
+
+            <?php echo $item->displayValues(); ?>
+
+            <div class="property">
+                <?php $itemSets = $item->itemSets(); ?>
+                <?php if (count($itemSets) > 0 and false): ?>
+                <dl class="row">
+                    <dt class="col-sm-2">
+                        <?php echo $translate('Item sets'); ?>
+                    </dt>
+                    <dd class="col-sm-10">
+                        <?php foreach ($itemSets as $itemSet): ?>
+                        <div class="value"><a
+                                href="<?php echo $escape($itemSet->url()); ?>"><?php echo $itemSet->displayTitle(); ?></a>
+                        </div>
+                        <?php endforeach; ?>
+                    </dd>
+                </dl>
+                <?php endif; ?>
+
+            </div>
+        </div>
+
+
+        <?php if (count($itemSets) > 0 and $this->themeSetting('show_collection') != "false"): ?>
+
+        <div class="my-5 pb-5 text-center">
+            <h4><?php echo $translate('Collection'); ?>
+            </h4>
+            <div>
+                <?php foreach ($itemSets as $itemSet): ?>
+                <div class="value mt-3"><a
+                        href="<?php echo $escape($itemSet->url()); ?>"><?php echo $itemSet->displayTitle(); ?></a>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
+    </div>
+
+    <?php
+$page = $this->params()->fromQuery('page', 1);
+$property = $this->params()->fromQuery('property');
+$subjectValues = $item->displaySubjectValues($page, 25, $property);
+?>
+    <?php if ($subjectValues): ?>
+    <div class="card">
+        <div class="card-header">
+            <?php echo $translate('Linked resources'); ?>
+        </div>
+        <div class="card-body">
+            <?php echo $subjectValues; ?>
+        </div>
+
+    </div>
+    <?php endif; ?>
+
+</div>

@@ -1,0 +1,90 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+
+$filterLocale = (bool) $this->siteSetting('filter_locale_values');
+$lang = $this->lang();
+
+$this->htmlElement('body')->appendAttribute('class', 'item-set resource browse');
+
+//リスト
+$bodyProperties = $this->themeSetting('body_property');
+
+$bodyHeadings = [];
+$rows = explode("\n", $bodyProperties);
+for ($i = 0; $i < count($rows); $i++) {
+    $row = $rows[$i];
+    $elements = explode(",", $row);
+    if (count($elements) > 1) {
+        array_push($bodyHeadings, [
+            'label' => $translate($elements[1]),
+            'value' => $elements[0]
+        ]);
+    }
+}
+
+//項目
+$bodyTerm = $this->siteSetting('browse_body_property_term');
+$headingTerm = $this->siteSetting('browse_heading_property_term');
+?>
+<div class="container-fluid mt-4 mb-5">
+  <?php echo $this->pageTitle($translate('Collection'), 3); ?>
+  <?php echo $this->searchFilters(); ?>
+  <div class="row my-4">
+    <div class="col-12 col-md mb-2">
+      <?php echo $this->pagination(); ?>
+    </div>
+    <div class="col-auto text-end mb-2">
+      <?php echo $this->hyperlink($translate('Advanced search'), $this->url(null, ['action' => 'search'], true), ['class' => 'advanced-search btn btn-secondary', 'style' => 'border-radius: 40px;']); ?>
+    </div>
+  </div>
+  <?php $this->trigger('view.browse.before'); ?>
+  <div class="row my-4">
+    <?php
+
+
+
+foreach ($itemSets as $itemSet):
+    $body = $bodyTerm ? $itemSet->value($bodyTerm, ['lang' => ($filterLocale ? [$lang, ''] : null)]) : $itemSet->displayDescription(null, ($filterLocale ? [$lang, ''] : null));
+    $heading = $headingTerm ? $itemSet->value($headingTerm, ['default' => $translate('[Untitled]')]) : $itemSet->displayTitle();
+?>
+    <div class="col-sm-3">
+      <!-- Card -->
+      <div class="mb-3">
+        <!-- card -->
+        <!-- Card image -->
+        <div style="background-color : lightgrey; height : 150px;" class="text-center">
+          <?php
+                if ($this->thumbnail($itemSet, 'medium')):
+            ?>
+          <?php echo $itemSet->linkRaw($this->thumbnail($itemSet, 'medium', ['style' => 'height : 150px; max-width : 100%;'])); ?>
+          <?php
+                else:
+            ?>
+          <?php echo $itemSet->linkRaw("<img style='height : 150px; max-width : 100%;'/>"); ?>
+          <!-- src='".""/*$this->assetUrl('img/noimg.png')*/."' -->
+          <?php
+                endif;
+            ?>
+        </div>
+        <!-- Card content -->
+        <div class="card-body">
+          <!-- Title -->
+          <h4 class="card-title">
+            <?php echo $itemSet->link($heading); ?>
+          </h4>
+          <!-- Text -->
+          <?php if ($body): ?>
+          <div class="card-text">
+            <?php echo $body; ?>
+          </div>
+          <?php endif; ?>
+        </div>
+      </div>
+    </div>
+    <?php endforeach; ?>
+  </div>
+  <!-- <?php $this->trigger('view.browse.after'); ?>
+  -->
+  <?php echo $this->pagination(); ?>
+</div>

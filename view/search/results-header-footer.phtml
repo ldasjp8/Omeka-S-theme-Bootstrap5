@@ -1,0 +1,120 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \AdvancedSearch\Api\Representation\SearchConfigRepresentation $searchPage
+ * @var \AdvancedSearch\Query $query
+ * @var \AdvancedSearch\Response $response
+ * @var \Omeka\Api\Representation\ItemSetRepresentation $itemSet
+ * @var string $resultPart
+ * @var int $documentCount
+ */
+
+$plugins = $this->getHelperPluginManager();
+$escape = $plugins->get('escapeHtml');
+$translate = $plugins->get('translate');
+$translatePlural = $plugins->get('translatePlural');
+
+// Default values of the module.
+$displayParts = [
+    'search_filters' => 'header',
+    'paginator' => 'header',
+    'per_pages' => 'header',
+    'sort' => 'header',
+    'grid_list' => 'header',
+    'grid_list_mode' => 'auto',
+];
+$displayParts = $searchPage ? $searchPage->setting('display', $displayParts) : $displayParts;
+$displayParts = array_filter($displayParts, function ($v) use ($resultPart) {
+    return in_array($v, [$resultPart, 'both']);
+});
+
+if (isset($displayParts['per_pages']) && $perPages = $searchPage->subSetting('pagination', 'per_pages')) {
+    // Don't display unmanaged per page from the query, but set the default Omeka per page.
+    // Can be simplified in a theme.
+    $setting = $plugins->get('setting');
+    $defaultPerPage = $this->status()->isSiteRequest() ? ($plugins->get('siteSetting')('pagination_per_page') ?: $setting('pagination_per_page', 25)) : $setting('pagination_per_page', 25);
+    $perPages = array_replace([(int) $defaultPerPage => sprintf($translate('Results by %d'), $defaultPerPage)], $perPages);
+    ksort($perPages);
+    $perPage = $query->getPerPage() ?: null;
+}
+?>
+
+<!-- フィルタ -->
+<?php if (isset($displayParts['search_filters'])): ?>
+<div>
+    <?= $this->searchingFilters($searchPage, $query, ['template' => 'common/search-filters-links']) ?>
+</div>
+<?php endif; ?>
+
+
+<div class="row">
+
+    <!-- ページネーション -->
+    <div class="col-12 col-md mb-2">
+        <?php if (isset($displayParts['paginator'])): ?>
+        <div class="">
+            <!-- search-results-count -->
+            <?= $this->pagination('common/pagination') ?>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- 1ページあたりの表示数 -->
+    <div class="col-md-auto text-end mb-2">
+        <?php if (!empty($perPages)): ?>
+        <div class="search-results-per-page">
+            <select name="per_page" class="form-select" style="border-radius: 40px;">
+                <?php foreach ($perPages as $per => $label): ?>
+                <?= sprintf('<option value="%d"%s>%s</option>', (int) $per, $per === $perPage ? ' selected="selected"' : '', $escape($label)) ?>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- ソート -->
+    <div class="col-md-auto text-end mb-2">
+        <?php if (isset($displayParts['sort']) && $sortFields = $searchPage->subSetting('sort', 'fields')): ?>
+        <!-- <?= $this->searchSortSelector($query, $sortFields) ?>
+        -->
+        <?php
+    $test = $this->searchSortSelector($query, $sortFields);
+    echo str_replace('name="sort"', 'name="sort" class="form-select" style="border-radius: 40px;"', $test);
+?>
+        <?php endif; ?>
+    </div>
+
+    <!-- レイアウト -->
+    <div class="col-md-auto text-end mb-2">
+        <?php if (isset($displayParts['grid_list']) && ($gridListMode = $searchPage->subSetting('display', 'grid_list_mode', 'auto')) && !in_array($gridListMode, ['list_only', 'grid_only'])): ?>
+
+        <div>
+            <label class="col-form-label">
+                <a id="iconList" class="mx-1 search-view-type-list" href="#"><i class="fa-solid fa-list"></i></a>
+                <a id="iconGrid" class="mx-1 search-view-type-grid" href="#"><i class="fa-solid fa-border-all"></i></a>
+            </label>
+        </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<style>
+    label[for="sort"] {
+        display: none;
+    }
+</style>
+
+<script>
+    $("#iconList").on('click', function() {
+        $(".list-col").removeClass("col-md-3 col-6").addClass("col-12")
+        //$(".list-col").removeClass("col-6").addClass("col2-12")
+        $(".list-col1").removeClass("col-12").addClass("col-3")
+        $(".list-col2").removeClass("col-12").addClass("col-9")
+    });
+
+    $("#iconGrid").on('click', function() {
+        $(".list-col").removeClass("col-12").addClass("col-md-3 col-6")
+        $(".list-col1").removeClass("col-3").addClass("col-12")
+        $(".list-col2").removeClass("col-9").addClass("col-12")
+    });
+</script>

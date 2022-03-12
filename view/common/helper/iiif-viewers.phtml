@@ -1,0 +1,80 @@
+<?php
+use Omeka\Api\Exception\NotFoundException;
+
+// アイコンURL取得
+function getIconAttr($view, $iconId, $attribute)
+{
+    // IDがない場合はなし
+    if (!$iconId) {
+        return '';
+    }
+    try {
+        // アイコンIDからデータ取得
+        $icon = $view->api()->read('iiif_viewers_icons', $iconId)->getContent();
+        if (!$icon) {
+            return '';
+        }
+        return sprintf($attribute, $icon->assetUrl());
+    } catch (NotFoundException $e) {
+        return '';
+    }
+}
+$translate = $this->plugin('translate');
+$manifest = $config["iiifResourceUri"];
+$iconAttr = 'src="%s"';
+// ロゴアイコン
+$logoIconId = $config["setting"]['logo'];
+// src属性取得
+$logoAttr = getIconAttr($this, $logoIconId, $iconAttr);
+// Miradorアイコン
+$miradorIconId = $config["setting"]['iiifviewers_mirador_icon'];
+// src属性取得
+$miradorAttr = getIconAttr($this, $miradorIconId, $iconAttr);
+// Universal Viewerアイコン
+$universalViewerIconId = $config["setting"]['iiifviewers_universal_viewer_icon'];
+// src属性取得
+$universalViewerAttr = getIconAttr($this, $universalViewerIconId, $iconAttr);
+// Curation Viewerアイコン
+$curationViewerIconId = $config["setting"]['iiifviewers_curation_viewer_icon'];
+// src属性取得
+$curationViewerAttr = getIconAttr($this, $curationViewerIconId, $iconAttr);
+// Tifyアイコン
+$tifyIconId = $config["setting"]['iiifviewers_tify_icon'];
+// src属性取得
+$tifyAttr = getIconAttr($this, $tifyIconId, $iconAttr);
+
+?>
+<div>
+    <div style="background-color: black">
+        <div class="container">
+            <iframe
+                src="<?php echo $config["asset"]; ?>/vendor/uv/uv.html#?manifest=<?php echo $manifest; ?>"
+                width="100%" height="500" allowfullscreen frameborder="0"></iframe>
+        </div>
+    </div>
+    <div class="container text-end mt-2">
+        <a href="<?php echo $manifest; ?>"
+            title="<?php echo $translate('IIIF Manifest'); ?>"
+            target="_blank"><img style="height: 24px" <?php echo $logoAttr; ?> /></a>
+        <?php if ($config["setting"]["iiifviewers_mirador"]): ?>
+        <a style="margin-left : 10px;"
+            href="<?php echo $config["setting"]["iiifviewers_mirador"].$manifest; ?>"
+            title="Mirador" target="_blank"><img style="height: 24px" <?php echo $miradorAttr; ?> /></a>
+        <?php endif; ?>
+        <?php if ($config["setting"]["iiifviewers_universal_viewer"]): ?>
+        <a style="margin-left : 10px;"
+            href="<?php echo $config["setting"]["iiifviewers_universal_viewer"].$manifest; ?>"
+            title="Univesal Viewer" target="_blank"><img style="height: 24px" <?php echo $universalViewerAttr; ?> /></a>
+        <?php endif; ?>
+        <?php if ($config["setting"]["iiifviewers_curation_viewer"]): ?>
+        <a style="margin-left : 10px;"
+            href="<?php echo $config["setting"]["iiifviewers_curation_viewer"].$manifest; ?>"
+            title="IIIF Curation Viewer" target="_blank"><img style="height: 24px" <?php echo $curationViewerAttr; ?> /></a>
+        <?php endif; ?>
+        <?php if ($config["setting"]["iiifviewers_tify"]): ?>
+        <a style="margin-left : 10px;"
+            href="<?php echo $config["setting"]["iiifviewers_tify"].$manifest; ?>"
+            title="TIFY" target="_blank"><img style="height: 24px" <?php echo $tifyAttr; ?> /></a>
+        <?php endif; ?>
+    </div>
+</div>

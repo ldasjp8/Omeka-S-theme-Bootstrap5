@@ -1,0 +1,10 @@
+<?php
+$translate = $this->plugin('translate');
+?>
+<div class="my-4">
+    <a class="my-1 px-3 btn btn-sm btn-primary" style="border-radius: 40px;" href="<?= $url; ?><?php echo $manifest; ?>" target="_blank"><?php echo $translate('画像の全コマダウンロード'); ?> <i class="bi bi-download"></i></a>
+    <small style="margin-left: 10px">
+    <?= $description; ?>
+    <!--
+    ファイルサイズが大きくなる場合がありますのでご注意ください。ダウンロードがうまく実行されない場合には、<a target="_blank" href="https://www.lib.u-tokyo.ac.jp/ja/library/contents/archives-top/iiifimagedownloader">こちら</a>のダウンローダをご利用ください（但しWindowsのみに対応）。--></small>
+</div>

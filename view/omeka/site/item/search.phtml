@@ -1,0 +1,19 @@
+<?php
+$translate = $this->plugin('translate');
+$this->htmlElement('body')->appendAttribute('class', 'items search');
+?>
+<div class="container mt-4 mb-5">
+    <h3><?php echo $translate('Advanced search'); ?>
+    </h3>
+    <form id="advanced-search" method="get"
+        action="<?php echo $this->escapeHtml($this->url(null, ['action' => 'browse'], true)); ?>">
+        <?php echo $this->partial(
+    'common/advanced-search',
+    ['query' => $this->params()->fromQuery(), 'resourceType' => 'item']
+); ?>
+        <div id="page-actions" class="mt-4">
+            <!--  class="my-3" -->
+            <button style="border-radius: 40px;" type="submit" name="submit" class="btn btn-primary px-3"><?php echo $this->escapeHtml($translate('Search')); ?></button>
+        </div>
+    </form>
+</div>

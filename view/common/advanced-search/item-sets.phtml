@@ -1,0 +1,66 @@
+<?php
+$translate = $this->plugin('translate');
+// Prepare the item set queries
+$ids = isset($query['item_set_id']) ? $query['item_set_id'] : [];
+if (!is_array($ids)) {
+    $ids = [$ids];
+}
+$ids = array_filter($ids);
+if (!$ids) {
+    $ids = [null];
+}
+
+if ($this->status()->isSiteRequest()) {
+    if (!$this->layout()->site->siteItemSets()) {
+        return;
+    }
+    $filterLocale = (bool) $this->siteSetting('filter_locale_values');
+    $lang = $this->lang();
+
+    $selectOptions = [
+        'disable_group_by_owner' => true,
+        'query' => ['site_id' => $this->layout()->site->id()],
+        'lang' => ($filterLocale == 1 ? $lang : null)
+    ];
+} else {
+    $selectOptions = [];
+}
+?>
+<div id="item-sets" class="field removable multi-value mt-4" role="group">
+    <!-- card -->
+    <div>
+        <h4><?php echo $translate('Collection'); ?>
+        </h4>
+    </div>
+
+    <div>
+        <div class="field-meta my-2">
+            <button style="border-radius: 40px;" type="button"
+                class="btn btn-secondary btn-sm add-value o-icon-add button"
+                aria-label="<?php echo $translate('Add new item set'); ?>"
+                title="<?php echo $translate('Add new item set'); ?>"><i
+                    class="fa-solid fa-circle-plus"></i>&nbsp;&nbsp;<?php echo $translate('Add'); ?></button>
+        </div>
+        <div class="inputs">
+            <?php foreach ($ids as $id): ?>
+            <div class="value mb-2">
+                <div class="input-group">
+                    <?php echo $this->itemSetSelect([
+                    'name' => 'item_set_id[]',
+                    'attributes' => [
+                        'value' => $id,
+                        'aria-labelledby' =>  'by-item-set-label',
+                        'class' => 'form-select'
+                    ],
+                    'options' => $selectOptions,
+                ]); ?>
+                    <button type="button" class="o-icon-delete remove-value button btn btn-md btn-outline-danger"
+                        aria-label="<?php echo $translate('Remove value'); ?>"
+                        title="<?php echo $translate('Remove value'); ?>"><i
+                            class="fa-solid fa-circle-xmark"></i></button>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>

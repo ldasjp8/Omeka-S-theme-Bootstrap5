@@ -1,0 +1,86 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\SiteRepresentation $site
+ * @var \AdvancedSearch\Api\Representation\SearchConfigRepresentation $searchPage
+ * @var \AdvancedSearch\Query $query
+ * @var \AdvancedSearch\Response $response
+ * @var string $title
+ * @var string $resourceName
+ */
+
+$resources = $response->getResources($resourceName);
+// A check is done: when page is not first, the resources may be empty even with results.
+if (!$resources) {
+    return;
+}
+
+$plugins = $this->getHelperPluginManager();
+$escape = $plugins->get('escapeHtml');
+$assetUrl = $plugins->get('assetUrl');
+$translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
+$thumbnailHelper = $plugins->get('thumbnail');
+
+$setting = $plugins->get($site ? 'siteSetting' : 'setting');
+
+$filterLocale = (bool) $setting('filter_locale_values');
+$siteLang = $plugins->get('lang')();
+$lang = $filterLocale ? $siteLang : null;
+$langValue = $filterLocale ? [$siteLang, ''] : null;
+
+$headingTerm = $setting('browse_heading_property_term');
+$bodyTerm = $setting('browse_body_property_term');
+
+$gridListMode = $searchPage ? $searchPage->subSetting('display', 'grid_list_mode', 'auto') : 'auto';
+
+$defaultThumbnail = '<img src="' . $assetUrl('thumbnails/default.png', 'Omeka', true) . '" title="' . $translate('No media') . '"/>';
+?>
+
+
+<div class="row">
+    <?php /** @var \Omeka\Api\Representation\AbstractResourceEntityRepresentation $resource */
+    foreach ($resources as $resource):
+        $resourceType = $resource->resourceName();
+        $media = $resource->primaryMedia();
+        $thumbnail = $media ? $thumbnailHelper($media, 'medium') : $defaultThumbnail;
+        $heading = $headingTerm ? $resource->value($headingTerm, ['lang' => $langValue]) : null;
+        $heading = $heading ? $heading->asHtml() : $escape($resource->displayTitle($translate('[Untitled]'), $lang));
+        $body = $bodyTerm ? $resource->value($bodyTerm, ['lang' => $langValue]) : null;
+        $body = $body ? $body->asHtml() : $escape($resource->displayDescription(null, $lang));
+    ?>
+
+    <div class="list-col col-6 col-md-3">
+        <div class="list-row row mb-3">
+
+
+            <div class="list-col1 col-12 mb-2">
+                <div style="background-color : lightgrey; height : 150px;" class="text-center">
+                    <?php $media = $resource->primaryMedia(); ?>
+                    <?php if ($media): ?>
+                    <?= $hyperlink->raw(
+        $this->thumbnail($media, 'square', ['title' => $media->displayTitle(), 'alt' => $media->mediaType() . ' thumbnail', 'style' => 'height : 150px; max-width : 100%;']),
+        $resource->url()
+    ) ?>
+                    <?php
+                                else:
+                            ?>
+                    <?php echo $hyperlink->raw("<img style='height : 150px; max-width : 100%;'/>", $resource->url()); ?>
+                    <!--  src='".$this->assetUrl('img/noimg.png')."' -->
+                    <?php endif; ?>
+                </div>
+            </div>
+            <div class="list-col2 col-12">
+                <h5><?= $resource->link($resource->displayTitle()) ?>
+                </h5>
+                <?php if ($description = $resource->displayDescription()): ?>
+                <div class="description">
+                    <?= $description ?>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <?php endforeach; ?>
+</div>

@@ -1,0 +1,16 @@
+<?php
+$translate = $this->plugin('translate');
+$searchValue = $this->escapeHtml($this->params()->fromQuery('fulltext_search', ''));
+?>
+
+<form
+    action="<?php echo $this->escapeHtml($this->url('site/resource', ['controller' => 'item','action' => 'browse'], true)); ?>"
+    id="search-form" class="mb-0 input-group">
+    <input type="text" name="property[0][text]" class="form-control"
+        value="<?php echo $searchValue; ?>"
+        placeholder="<?php echo $translate('Search'); ?>">
+    <input type="hidden" name="property[0][joiner]" value="and" />
+    <input type="hidden" name="property[0][property]" value="" />
+    <input type="hidden" name="property[0][type]" value="in" />
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+</form>

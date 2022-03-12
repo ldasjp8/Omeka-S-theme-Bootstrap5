@@ -1,0 +1,40 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var array $filters
+ */
+
+if (!count($filters)) {
+    return;
+}
+
+$plugins = $this->getHelperPluginManager();
+$escape = $plugins->get('escapeHtml');
+$escapeAttr = $this->plugin('escapeHtmlAttr');
+?>
+
+<!--  class="search-filters" -->
+<div class="mb-3">
+    <?php foreach ($filters as $filterLabel => $filterValues): ?>
+
+    <span class="badge rounded-pill bg-secondary m-1 py-2 px-3">
+        <span>
+            <!--  class="filter-label" -->
+            <?php echo $escape($filterLabel); ?>
+        </span>
+
+        <?php foreach ($filterValues as $urlQuery => $filterValue): ?>
+        <?= $escape($filterValue) ?>
+
+        &nbsp;
+
+        <a style="color: white;"
+            href="<?= $escapeAttr($urlQuery) ?>"><i
+                class="bi bi-x-circle-fill"></i></a>
+
+        <?php endforeach; ?>
+
+
+    </span>
+    <?php endforeach; ?>
+</div>
