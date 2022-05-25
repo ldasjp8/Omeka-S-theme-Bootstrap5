@@ -12,10 +12,6 @@ $itemMedia = $item->media();
 
     <?php echo $this->pageTitle($item->displayTitle(), 3); ?>
 
-    <div class="my-4">
-        <?php $this->trigger('view.show.after'); ?>
-    </div>
-
     <div class="mt-5 mb-4">
 
         <div class="card-body pt-4">
@@ -76,5 +72,9 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
 
     </div>
     <?php endif; ?>
+
+    <div class="my-4">
+        <?php $this->trigger('view.show.after'); ?>
+    </div>
 
 </div>
