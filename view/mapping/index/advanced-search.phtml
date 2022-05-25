@@ -1,0 +1,34 @@
+<?php
+$address = isset($query['mapping_address']) ? $query['mapping_address'] : null;
+$radius = isset($query['mapping_radius']) ? $query['mapping_radius'] : null;
+$radiusUnit = isset($query['mapping_radius_unit']) ? $query['mapping_radius_unit'] : null;
+$units = ['km' => $this->translate('Kilometers'), 'miles' => $this->translate('Miles')];
+?>
+<div class="field mt-4">
+    <div class="field-meta">
+        <legend><?php echo $this->translate('Geographic Address'); ?></legend>
+    </div>
+    <div class="inputs">
+        <input style="border-radius: 40px;" class="form-control" type="text" name="mapping_address" value="<?php echo $this->escapeHtml($address); ?>">
+    </div>
+</div>
+<div class="field mt-4">
+    <div class="field-meta">
+        <legend><?php echo $this->translate('Geographic Radius'); ?></legend>
+    </div>
+    <div class="inputs">
+        <input style="border-radius: 40px;" class="form-control" type="text" name="mapping_radius" value="<?php echo $this->escapeHtml($radius); ?>">
+    </div>
+</div>
+<div class="field mt-4">
+    <div class="field-meta">
+        <legend><?php echo $this->translate('Geographic Radius Unit'); ?></legend>
+    </div>
+    <div class="inputs">
+        <select style="border-radius: 40px;" class="form-select" name="mapping_radius_unit">
+            <?php foreach ($units as $key => $value): ?>
+            <option value="<?php echo $this->escapeHtml($key); ?>"<?php echo $key === $radiusUnit ? ' selected' : null; ?>><?php echo $this->escapeHtml($value); ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+</div>
