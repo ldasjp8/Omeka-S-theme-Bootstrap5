@@ -59,9 +59,9 @@ for ($i = 0; $i < count($rows); $i++) {
 
 //レイアウト
 $layoutSetting = $this->themeSetting('browse_layout');
-$gridState = ($layoutSetting == 'togglegrid') ? 'disabled' : '';
-$listState = ($layoutSetting == 'togglelist') ? 'disabled': '';
-$isGrid = (!isset($layoutSetting) || strpos($layoutSetting, 'grid') !== false) ? true : false;
+$gridState = ($layoutSetting == 'grid') ? 'disabled' : '';
+$listState = ($layoutSetting == 'list') ? 'disabled': '';
+$isGrid = (!isset($layoutSetting) || strpos($layoutSetting, 'grid') !== false) ? 1 : 0;
 
 $page = isset($query["page"]) ? intval($query["page"]) : 1;
 
