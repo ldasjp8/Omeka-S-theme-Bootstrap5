@@ -53,7 +53,7 @@ $tifyAttr = getIconAttr($this, $tifyIconId, $iconAttr);
         </div>
     </div>
     <div class="container text-end mt-2">
-        <a href="<?php echo $manifest; ?>"
+        <a href="<?php echo $manifest; ?>?manifest=<?php echo $manifest; ?>"
             title="<?php echo $translate('IIIF Manifest'); ?>"
             target="_blank"><img style="height: 24px" <?php echo $logoAttr; ?> /></a>
         <?php if ($config["setting"]["iiifviewers_mirador"]): ?>
