@@ -1,6 +1,6 @@
 set -e
 
-version=1.0.1
+version=1.0.2
 name=Bootstrap5
 
 # 不要なファイルを除外したモジュール名のフォルダを作成
