@@ -56,6 +56,14 @@ $itemMedia = $item->media();
 
     </div>
 
+    <?php if (!$embedMedia && $itemMedia): ?>
+<div class="media-list">
+    <?php foreach ($itemMedia as $media): ?>
+        <?php echo $media->linkPretty(); ?>
+    <?php endforeach; ?>
+</div>
+<?php endif; ?>
+
     <?php
 $page = $this->params()->fromQuery('page', 1);
 $property = $this->params()->fromQuery('property');
