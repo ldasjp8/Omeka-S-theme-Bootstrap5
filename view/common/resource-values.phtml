@@ -10,7 +10,6 @@ $labelInfo = $this->setting('property_label_information');
         margin-right: 10px;
     }
 </style>
-
 <div class="table-responsive">
     <table class="table table-striped">
         <tbody>
@@ -27,7 +26,8 @@ $labelInfo = $this->setting('property_label_information');
                     <span class="field-term">(<?php echo $escape($propertyData['property']->vocabulary()->label()); ?>)</span>
                     <?php endif; ?>
                 </td>
-                <td><?php foreach ($propertyData['values'] as $value): ?>
+                <td>
+                    <?php foreach ($propertyData['values'] as $value): ?>
                     <?php
                         $valueType = $value->type();
                         $class = ['value'];
@@ -47,6 +47,7 @@ $labelInfo = $this->setting('property_label_information');
                         <span class="badge badge-pill px-3" style="background-color : #78909c;"><?php echo $language; ?></span>
                         <?php endif; ?>
                         <?php echo $value->asHtml(); ?>
+                        <?php $this->trigger('view.show.value', ['value' => $value]); ?>
                     </div>
                     <?php endforeach; ?>
                 </td>
