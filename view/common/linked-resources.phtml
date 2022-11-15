@@ -8,10 +8,11 @@ if ('Omeka\Api\Representation\ItemSetRepresentation' === get_class($objectResour
 }
 $pagination = $this->pagination(null, $totalCount, $page, $perPage);
 $pagination->setFragment($fragment);
+$showAltLabel = false;
 ?>
 <div id="linked-resources">
 <div class="linked-header">
-    <div id="linked-filter">
+    <div id="linked-filter" class="mb-4">
         <div class="form-group row">
             <label for="staticEmail" class="col-sm-4 col-form-label"><?php echo $translate('Filter by property'); ?></label>
             <div class="col-sm-8">
@@ -36,9 +37,11 @@ $pagination->setFragment($fragment);
 <table class="table">
 <thead>
     <tr>
-    <th><?php echo $translate('Title'); ?></th>
-    <th><?php echo $translate('Alternate label'); ?></th>
-    <th><?php echo $translate('Class'); ?></th>
+        <th><?php echo $translate('Title'); ?></th>
+        <?php if ($showAltLabel): ?>
+            <th width="40%"><?php echo $translate('Alternate label'); ?></th>
+        <?php endif; ?>
+        <th width="20%"><?php echo $translate('Class'); ?></th>
     </tr>
 </thead>
 <tbody>
@@ -50,12 +53,14 @@ $pagination->setFragment($fragment);
     ?>
     <tr class="linked-resource">
         <td><?php echo $value->resource()->linkPretty(); ?></td>
-        <td>
-        <?php if ($altLabel): ?>
-        <span class="alternate-label"><?php echo $this->escapeHtml($altLabel); ?></span>
+        <?php if ($showAltLabel): ?>
+            <td width="40%">
+            <?php if ($altLabel): ?>
+                <span class="alternate-label"><?php echo $this->escapeHtml($altLabel); ?></span>
+            <?php endif; ?>
+            </td>
         <?php endif; ?>
-        </td>
-        <td>
+        <td width="20%">
         <?php if ($value->resource()->resourceClass()): ?>
         <span class="resource-class"><?php echo $this->escapeHtml($value->resource()->resourceClass()->label()); ?></span>
         <?php endif; ?>
