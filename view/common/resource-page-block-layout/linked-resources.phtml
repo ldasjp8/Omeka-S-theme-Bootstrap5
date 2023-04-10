@@ -1,0 +1,29 @@
+<?php
+$translate = $this->plugin('translate');
+$options = [
+    'page' => $this->params()->fromQuery('page', 1),
+    'perPage' => 25,
+    'resourceProperty' => $this->params()->fromQuery('resource_property'),
+];
+if ($this->siteSetting('exclude_resources_not_in_site')) {
+    $options['siteId'] = $this->currentSite()->id();
+}
+$subjectValues = $resource->displaySubjectValues($options);
+?>
+<?php if ($subjectValues): ?>
+
+    <div class="card my-5">
+        <div class="card-header">
+            <?php echo $translate('Linked resources'); ?>
+        </div>
+        <div class="card-body">
+
+<div id="resources-linked">
+    <!-- <h3><?php echo $this->translate('Linked resources'); ?></h3> -->
+    <?php echo $subjectValues; ?>
+</div>
+
+</div>
+</div>
+
+<?php endif; ?>
