@@ -56,7 +56,7 @@ $labelInfo = $this->setting('property_label_information');
                             <?php endif; ?>
                             <?php echo $value->asHtml(); ?>
                         </div>
-                        <?php if ($index !== array_key_last($propertyData['values'])): ?>
+                        <?php if (false && $index !== array_key_last($propertyData['values'])): ?>
                             <hr/>
                         <?php endif; ?>
                     <?php endforeach; ?>
