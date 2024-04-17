@@ -24,8 +24,9 @@ jobs:
         id: read-config
         run: |
           version=$(grep 'version' ./config/theme.ini | cut -d '=' -f2 | tr -d ' "' | tr -d "\r")
+          id=$(grep 'id' ./config/theme.ini | cut -d '=' -f2 | tr -d ' "' | tr -d "\r")
           echo "::set-output name=version::$version"
-          echo "::set-output name=name::IiifViewers"
+          echo "::set-output name=name::$id"
 
       - name: Prepare release
         run: |

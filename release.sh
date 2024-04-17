@@ -5,7 +5,7 @@ CONFIG_FILE="config/theme.ini"
 
 # バージョン情報の読み取り
 version=$(grep '^version\s*=' $CONFIG_FILE | cut -d '=' -f2 | tr -d ' "' | tr -d "\r")
-name="IiifViewers"
+id=$(grep '^id\s*=' $CONFIG_FILE | cut -d '=' -f2 | tr -d ' "' | tr -d "\r")
 
 # タグとリリースメッセージ
 tag="$version"
@@ -18,4 +18,4 @@ git tag -a $tag -m "$release_message"
 git push origin $tag
 
 # GitHubリリースの作成
-gh release create $tag --title "$name-$version" --notes "Released version $version."
+gh release create $tag --title "$id-$version" --notes "Released version $version."
