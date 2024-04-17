@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # config/module.iniのパス
-CONFIG_FILE="config/module.ini"
+CONFIG_FILE="config/theme.ini"
 
 # バージョン情報の読み取り
 version=$(grep '^version\s*=' $CONFIG_FILE | cut -d '=' -f2 | tr -d ' "' | tr -d "\r")
