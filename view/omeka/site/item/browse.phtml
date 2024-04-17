@@ -45,16 +45,23 @@ if ($sortProperties != "") {
 $bodyProperties = $this->themeSetting('body_property');
 
 $bodyHeadings = [];
-$rows = explode("\n", $bodyProperties);
-for ($i = 0; $i < count($rows); $i++) {
-    $row = $rows[$i];
-    $elements = explode(",", $row);
-    if (count($elements) > 1) {
-        array_push($bodyHeadings, [
-            'label' => $translate($elements[1]),
-            'value' => $elements[0]
-        ]);
+// Ensure $bodyProperties is not null and is a string
+if (is_string($bodyProperties)) {
+    $rows = explode("\n", $bodyProperties);
+    for ($i = 0; $i < count($rows); $i++) {
+        $row = $rows[$i];
+        $elements = explode(",", $row);
+        if (count($elements) > 1) {
+            array_push($bodyHeadings, [
+                'label' => $translate($elements[1]),
+                'value' => $elements[0]
+            ]);
+        }
     }
+} else {
+    // Handle the case where $bodyProperties is not a string
+    // For example, log an error message, set an error flag, etc.
+    error_log('Error: $bodyProperties must be a string. Given: ' . var_export($bodyProperties, true));
 }
 
 //レイアウト
@@ -67,16 +74,25 @@ $page = isset($query["page"]) ? intval($query["page"]) : 1;
 
 $headingTerm = $this->siteSetting('browse_heading_property_term');
 $bodyTerm = $this->siteSetting('browse_body_property_term');
+
+$advancedSearchUrl = $this->themeSetting('advanced_search_url');
+
+if (!$advancedSearchUrl) {
+    $advancedSearchUrl = $this->url('site/resource', ['controller' => 'item', 'action' => 'search'], ['query' => $query], true);
+} else {
+    $advancedSearchUrl = $advancedSearchUrl . '?' . http_build_query($query);
+    // $advancedSearchUrl = $this->url($advancedSearchUrl, [], ['query' => $query], true);
+}
 ?>
 
 <style>
-    .closed {
-        display: none;
-    }
+.closed {
+    display: none;
+}
 
-    .deactive {
-        color: inherit;
-    }
+.deactive {
+    color: inherit;
+}
 </style>
 
 <div class="container-fluid mt-4 mb-5">
@@ -88,18 +104,15 @@ $bodyTerm = $this->siteSetting('browse_body_property_term');
             <!-- <span class="badge rounded-pill p-2 px-3 bg-secondary"><?php echo $translate('Collection'); ?></span>
             -->
         </div>
-        <div id="metadata" class="mb-4"
-            style="<?= $page > 1 ? 'display:none;' : '' ?>">
+        <div id="metadata" class="mb-4" style="<?= $page > 1 ? 'display:none;' : '' ?>">
             <div class="metadata">
                 <?php echo $itemSet->displayValues(); ?>
             </div>
         </div>
         <div class="text-center">
-            <button id="openBtn"
-                style="border-radius: 40px; <?= $page > 1 ? '' : 'display:none;' ?>>"
+            <button id="openBtn" style=" <?= $page > 1 ? '' : 'display:none;' ?>>"
                 class="btn btn-sm btn-dark"><?= $translate('メタデータを表示'); ?></button>
-            <button id="closeBtn"
-                style="border-radius: 40px; <?= $page > 1 ? 'display:none;' : '' ?>"
+            <button id="closeBtn" style=" <?= $page > 1 ? 'display:none;' : '' ?>"
                 class="btn btn-sm btn-dark"><?= $translate('隠す'); ?></button>
         </div>
     </div>
@@ -126,7 +139,9 @@ $bodyTerm = $this->siteSetting('browse_body_property_term');
             </div>
             <!-- 詳細検索 -->
             <div class="col-auto text-end mb-2">
-                <?php echo $this->hyperlink($translate('Advanced search'), $this->url('site/resource', ['controller' => 'item', 'action' => 'search'], ['query' => $query], true), ['class' => 'advanced-search btn btn-secondary', 'style' => 'border-radius: 40px;']); ?>
+                <?php echo $this->hyperlink($translate('Advanced search'), 
+                $advancedSearchUrl,
+                ['class' => 'advanced-search btn btn-secondary', 'style' => '']); ?>
             </div>
         </div>
 
@@ -259,55 +274,55 @@ $bodyTerm = $this->siteSetting('browse_body_property_term');
     </div>
 
     <script>
-        let $isGrid = Number(sessionStorage.getItem('omekas-$isGrid') ||
-            <?= $isGrid; ?>
-        );
+    let $isGrid = Number(sessionStorage.getItem('omekas-$isGrid') ||
+        <?= $isGrid; ?>
+    );
 
-        if ($isGrid === 1) {
-            clickGrid();
-        } else {
-            clickList();
-        }
+    if ($isGrid === 1) {
+        clickGrid();
+    } else {
+        clickList();
+    }
 
-        $('#iconList').on('click', function(e) {
-            e.preventDefault();
-            clickList();
-        });
+    $('#iconList').on('click', function(e) {
+        e.preventDefault();
+        clickList();
+    });
 
-        $('#iconGrid').on('click', function(e) {
-            e.preventDefault();
-            clickGrid();
-        });
+    $('#iconGrid').on('click', function(e) {
+        e.preventDefault();
+        clickGrid();
+    });
 
-        function clickGrid() {
-            $("#divGrid").removeClass("closed")
-            $("#divList").addClass("closed")
+    function clickGrid() {
+        $("#divGrid").removeClass("closed")
+        $("#divList").addClass("closed")
 
-            $("#iconList").addClass("deactive")
-            $("#iconGrid").removeClass("deactive")
+        $("#iconList").addClass("deactive")
+        $("#iconGrid").removeClass("deactive")
 
-            sessionStorage.setItem('omekas-$isGrid', 1);
-        }
+        sessionStorage.setItem('omekas-$isGrid', 1);
+    }
 
-        function clickList() {
-            $("#divGrid").addClass("closed")
-            $("#divList").removeClass("closed")
+    function clickList() {
+        $("#divGrid").addClass("closed")
+        $("#divList").removeClass("closed")
 
-            $("#iconList").removeClass("deactive")
-            $("#iconGrid").addClass("deactive")
+        $("#iconList").removeClass("deactive")
+        $("#iconGrid").addClass("deactive")
 
-            sessionStorage.setItem('omekas-$isGrid', 0);
-        }
+        sessionStorage.setItem('omekas-$isGrid', 0);
+    }
 
-        $('#openBtn').on('click', function(e) {
-            $("#metadata").show();
-            $("#openBtn").hide();
-            $("#closeBtn").show();
-        });
+    $('#openBtn').on('click', function(e) {
+        $("#metadata").show();
+        $("#openBtn").hide();
+        $("#closeBtn").show();
+    });
 
-        $('#closeBtn').on('click', function(e) {
-            $("#metadata").hide();
-            $("#openBtn").show();
-            $("#closeBtn").hide();
-        });
+    $('#closeBtn').on('click', function(e) {
+        $("#metadata").hide();
+        $("#openBtn").show();
+        $("#closeBtn").hide();
+    });
     </script>

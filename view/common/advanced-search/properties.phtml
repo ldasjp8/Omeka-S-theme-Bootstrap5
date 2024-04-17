@@ -45,7 +45,7 @@ $usedTerms = $isSiteRequest ? $siteSetting('advancedsearchplus_restrict_used_ter
 <div id="property-queries" class="field removable multi-value mt-4" role="group" aria-labelledby="by-value-label">
     <div class="field-meta my-2">
         <div>
-            <button style="border-radius: 40px;" type="button" class="add-value o-icon-add btn btn-secondary btn-sm"
+            <button style="" type="button" class="add-value o-icon-add btn btn-secondary btn-sm"
                 aria-label="<?php echo $translate('Add new value'); ?>"
                 title="<?php echo $translate('Add new value'); ?>"><i
                     class="fa-solid fa-circle-plus"></i>&nbsp;&nbsp;<?php echo $translate('Add new value'); ?></button>
@@ -61,7 +61,7 @@ $usedTerms = $isSiteRequest ? $siteSetting('advancedsearchplus_restrict_used_ter
             <!-- align-items-center -->
             <div class="mb-1 col-auto">
 
-                <select style="border-radius: 40px;" class="joiner form-select"
+                <select style="" class="joiner form-select"
                     name="<?php echo $this->escapeHtml($stem . '[joiner]'); ?>">
                     <?php echo $queryOption('and', $property, 'joiner', $translate('AND')); ?>
                     <?php echo $queryOption('or', $property, 'joiner', $translate('OR')); ?>
@@ -74,7 +74,7 @@ $usedTerms = $isSiteRequest ? $siteSetting('advancedsearchplus_restrict_used_ter
                         'class' => 'query-property form-select',
                         'value' => isset($property['property']) ? $property['property'] : null,
                         'aria-label' => $translate('Property'),
-                        "style" => "border-radius: 40px;"
+                        "style" => ""
                     ],
                     'options' => [
                         'empty_option' => '[Any Property]', // @translate
@@ -84,7 +84,7 @@ $usedTerms = $isSiteRequest ? $siteSetting('advancedsearchplus_restrict_used_ter
                 ]); ?>
             </div>
             <div class="mb-1 col-auto">
-                <select style="border-radius: 40px;" class="query-type form-select"
+                <select style="" class="query-type form-select"
                     name="<?php echo $this->escapeHtml($stem . '[type]'); ?>"
                     aria-label="<?php echo $translate('Query type'); ?>">
                     <?php echo $queryOption('in', $property, 'type', $translate('contains')); ?>
@@ -99,7 +99,7 @@ $usedTerms = $isSiteRequest ? $siteSetting('advancedsearchplus_restrict_used_ter
                 </select>
             </div>
             <div class="mb-1 col-auto">
-                <div class="input-group" style="border-radius: 40px;">
+                <div class="input-group" style="">
                     <?php echo $queryText($property, $index); ?>
                     <button type="button" class="o-icon-delete remove-value btn btn-outline-danger"
                         aria-label="<?php echo $translate('Remove value'); ?>"

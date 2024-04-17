@@ -71,11 +71,12 @@ $defaultThumbnail = '<img src="' . $assetUrl('thumbnails/default.png', 'Omeka', 
                 </div>
             </div>
             <div class="list-col2 col-12">
-                <h5><?= $resource->link($resource->displayTitle()) ?>
+                <h5>
+                    <?= $resource->linkRaw($heading) ?>
                 </h5>
-                <?php if ($description = $resource->displayDescription()): ?>
+                <?php if ($body): ?>
                 <div class="description">
-                    <?= $description ?>
+                    <?= $body ?>
                 </div>
                 <?php endif; ?>
             </div>

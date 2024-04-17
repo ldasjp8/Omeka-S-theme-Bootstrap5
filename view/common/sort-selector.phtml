@@ -5,30 +5,27 @@ $escape = $this->plugin('escapeHtml');
 <form action="" class="row">
     <div class="col-auto mb-1">
         <?php echo $this->queryToHiddenInputs(['sort_by', 'sort_order']); ?>
-        <select class="form-select" style="border-radius: 40px;" name="sort_by"
-            aria-label="<?php echo $translate('Sort by'); ?>">
-            <?php foreach ($sortBy as $sortByHeading): ?>
-            <?php $selected = ($sortByQuery === $sortByHeading['value']) ? 'selected' : ''; ?>
-            <option
-                value="<?php echo $escape($sortByHeading['value']); ?>"
-                <?php echo $selected; ?>><?php echo $sortByHeading['label']; ?>
-            </option>
+        <select class="form-select" style="" name="sort_by" aria-label="<?php echo $translate('Sort by'); ?>">
+            <?php foreach($sortConfig as $sortBy => $label): ?>
+            <option value="<?php echo $escape($sortBy); ?>"
+                <?php echo ($sortByQuery === $sortBy) ? ' selected' : ''; ?>><?php echo $escape($label); ?></option>
             <?php endforeach; ?>
         </select>
 
     </div>
     <div class="col-auto mb-1">
 
-        <select class="form-select" style="border-radius: 40px;" name="sort_order"
-            aria-label="<?php echo $translate('Sort order'); ?>">
-            <option value="asc" <?php echo ($sortOrderQuery === 'asc') ? 'selected' : ''; ?>><?php echo $translate('Ascending'); ?>
+        <select class="form-select" style="" name="sort_order" aria-label="<?php echo $translate('Sort order'); ?>">
+            <option value="asc" <?php echo ($sortOrderQuery === 'asc') ? 'selected' : ''; ?>>
+                <?php echo $translate('Ascending'); ?>
             </option>
-            <option value="desc" <?php echo ($sortOrderQuery === 'desc') ? 'selected' : ''; ?>><?php echo $translate('Descending'); ?>
+            <option value="desc" <?php echo ($sortOrderQuery === 'desc') ? 'selected' : ''; ?>>
+                <?php echo $translate('Descending'); ?>
             </option>
         </select>
     </div>
     <div class="col-auto mb-1">
-        <button type="submit" style="border-radius: 40px;" class="btn btn-outline-primary"><?php echo $translate('Sort'); ?></button>
+        <button type="submit" style="" class="btn btn-outline-primary"><?php echo $translate('Sort'); ?></button>
     </div>
 
 </form>

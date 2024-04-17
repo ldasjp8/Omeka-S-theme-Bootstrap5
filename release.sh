@@ -1,19 +1,21 @@
-set -e
+#!/bin/bash
 
-version=1.0.2
-name=Bootstrap5
+# config/module.iniのパス
+CONFIG_FILE="config/module.ini"
 
-# 不要なファイルを除外したモジュール名のフォルダを作成
-rsync -ahv . ./$name --exclude '.*' --exclude '*.sh'
+# バージョン情報の読み取り
+version=$(grep '^version\s*=' $CONFIG_FILE | cut -d '=' -f2 | tr -d ' "' | tr -d "\r")
+name="IiifViewers"
 
-# zipファイルの作成
-zip $name-$version.zip -r $name
+# タグとリリースメッセージ
+tag="$version"
+release_message="Released version $version."
 
-# フォルダの削除
-rm -rf $name
+# Gitタグの作成
+git tag -a $tag -m "$release_message"
 
-# リリース
-gh release create $version $name-$version.zip -t $name-$version -n "Released version $version."
+# Gitタグのプッシュ
+git push origin $tag
 
-# ファイルの削除
-rm $name-$version.zip
+# GitHubリリースの作成
+gh release create $tag --title "$name-$version" --notes "Released version $version."

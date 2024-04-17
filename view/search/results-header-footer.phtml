@@ -63,7 +63,7 @@ if (isset($displayParts['per_pages']) && $perPages = $searchPage->subSetting('pa
     <div class="col-md-auto text-end mb-2">
         <?php if (!empty($perPages)): ?>
         <div class="search-results-per-page">
-            <select name="per_page" class="form-select" style="border-radius: 40px;">
+            <select name="per_page" class="form-select" style="">
                 <?php foreach ($perPages as $per => $label): ?>
                 <?= sprintf('<option value="%d"%s>%s</option>', (int) $per, $per === $perPage ? ' selected="selected"' : '', $escape($label)) ?>
                 <?php endforeach; ?>
@@ -79,7 +79,7 @@ if (isset($displayParts['per_pages']) && $perPages = $searchPage->subSetting('pa
         -->
         <?php
     $test = $this->searchSortSelector($query, $sortFields);
-    echo str_replace('name="sort"', 'name="sort" class="form-select" style="border-radius: 40px;"', $test);
+    echo str_replace('name="sort"', 'name="sort" class="form-select" style=""', $test);
 ?>
         <?php endif; ?>
     </div>

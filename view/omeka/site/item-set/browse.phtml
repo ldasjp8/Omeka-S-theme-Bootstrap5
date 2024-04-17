@@ -35,7 +35,7 @@ $headingTerm = $this->siteSetting('browse_heading_property_term');
       <?php echo $this->pagination(); ?>
     </div>
     <div class="col-auto text-end mb-2">
-      <?php echo $this->hyperlink($translate('Advanced search'), $this->url(null, ['action' => 'search'], true), ['class' => 'advanced-search btn btn-secondary', 'style' => 'border-radius: 40px;']); ?>
+      <?php echo $this->hyperlink($translate('Advanced search'), $this->url(null, ['action' => 'search'], true), ['class' => 'advanced-search btn btn-secondary', 'style' => '']); ?>
     </div>
   </div>
   <?php $this->trigger('view.browse.before'); ?>

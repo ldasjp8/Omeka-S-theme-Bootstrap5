@@ -60,10 +60,12 @@ $partials = $filterResults['partials'];
 ?>
 
 <div class="advanced-search-content">
-<?php
+    <?php
 foreach ($partials as $partial) {
     echo $this->partial($partial, ['query' => $query, 'resourceType' => $resourceType]);
 }
 ?>
 </div>
-<script>Omeka.prepareSearchForm($('#advanced-search'));</script>
+<script>
+Omeka.prepareSearchForm($('#advanced-search'));
+</script>

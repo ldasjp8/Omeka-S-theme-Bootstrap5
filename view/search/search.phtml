@@ -1,7 +1,7 @@
 <?php
 /*
  * Copyright BibLibre, 2016
- * Copyright Daniel Berthereau, 2017-2021
+ * Copyright Daniel Berthereau, 2017-2024
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -30,185 +30,148 @@
 /**
  * @var \Laminas\View\Renderer\PhpRenderer $this
  * @var \Omeka\Api\Representation\SiteRepresentation $site
- * @var \AdvancedSearch\Api\Representation\SearchConfigRepresentation $searchPage
+ * @var \AdvancedSearch\Api\Representation\SearchConfigRepresentation $searchConfig
  * @var \AdvancedSearch\Query $query
  * @var \AdvancedSearch\Response $response
+ *
  * For block layout:
- * @var string $heading Unused in current template.
+ * @var string $heading Used in the block layout template.
  * @var bool $skipFormAction Remove action of the form, so it uses current page.
  */
-
-// Compatibility with old theme for module Search.
-
-if ($this->resolver('search/index/search.phtml')) {
-    $this->logger()->warn('The file "search/index/search.phtml" of your current theme should be moved to "search/search.phtml".');
-    echo $this->partial('search/index/search.phtml', $this->vars());
-    return;
-}
 
 $plugins = $this->getHelperPluginManager();
 $api = $plugins->get('api');
 $partial = $plugins->get('partial');
+$escape = $plugins->get('escapeHtml');
 $assetUrl = $plugins->get('assetUrl');
 $translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
 $translatePlural = $plugins->get('translatePlural');
 
+$breadcrumbs = $plugins->has('breadcrumbs') ? $plugins->get('breadcrumbs') : null;
+
 $vars = $this->vars();
+
+$setting = $plugins->get(isset($site) ? 'siteSetting' : 'setting');
+
+$filterLocale = (bool) $setting('filter_locale_values');
+$lang = $this->lang();
+$langTitle = $filterLocale ? $lang : null;
+$langValue = $filterLocale ? [$lang, ''] : null;
 
 // Used in case of a redirect of item-set/show to search, when used like item/browse.
 $itemSetId = $this->params()->fromRoute('item-set-id');
 // TODO Use site item set ?
+/** @var \Omeka\Api\Representation\ItemSetRepresentation $itemSet */
 $itemSet = $itemSetId ? $api->searchOne('item_sets', ['id' => $itemSetId])->getContent() : null;
 
-$isPartial = !$site;
-$skipFormAction = !empty($skipFormAction);
+$isPartial = $skipFormAction = !empty($skipFormAction);
 
-//$this->headLink()->appendStylesheet($assetUrl('css/search.css', 'AdvancedSearch'));
-//$this->headScript()->appendFile($assetUrl('js/search.js'), 'text/javascript', ['defer' => 'defer']);
+$documentCount = isset($response) ? $response->getTotalResults() : 0;
+if ($documentCount) {
+    $itemSetsCount = $response->getResourceTotalResults('item_sets');
+    $itemsCount = $response->getResourceTotalResults('items');
+    $displayParts = $searchConfig->setting('display', []);
+    $displayPartsHeader = array_filter($displayParts, function ($v) { return in_array($v, ['header', 'both']); });
+    $displayPartsFooter = array_filter($displayParts, function ($v) { return in_array($v, ['footer', 'both']); });
+} else {
+    $itemSetsCount = 0;
+    $itemsCount = 0;
+    $displayPartsHeader = [];
+    $displayPartsFooter = [];
+}
+
+/*
+$this->headLink()
+    ->appendStylesheet($assetUrl('css/search.css', 'AdvancedSearch'));
+*/
+$this->headScript()
+    ->appendFile($assetUrl('js/search.js', 'AdvancedSearch'), 'text/javascript', ['defer' => 'defer']);
 ?>
 
-<style>
-    #search-filters .filter {
-        margin-left: 0px !important;
-    }
+<?php if (empty($isPartial)): ?>
+<?php if ($breadcrumbs): ?>
+<?= $breadcrumbs() ?>
+<?php else: ?>
 
-    /*
-#search-filters .filter {
-    margin-left: 0px !important;
-}
 
-.search-submit {
-    display: inline-block;
-    font-weight: 400;
-    line-height: 1.5;
-    color: #212529;
-    text-align: center;
-    text-decoration: none;
-    vertical-align: middle;
-    cursor: pointer;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
-    background-color: transparent;
-    border: 1px solid transparent;
-    padding: 0.375rem 0.75rem;
-    font-size: 1rem;
-    border-radius: 0.25rem;
-    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-    
-    color: #fff;
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-}
-*/
-</style>
+<div id="breadcrumb" aria-label="breadcrumb" style="background-color: #e9ecef;"">
+            <ol class=" breadcrumb p-2">
+    <?php if (isset($site)): ?>
+    <li class="breadcrumb-item"><?= $hyperlink($translate('Home'), $site->siteUrl()) ?></li>
+    <?php endif; ?>
+    <?php if ($itemSet): ?>
+    <li class="breadcrumb-item"><?= $translate('Collections') ?></li>
+    <li class="breadcrumb-item">
+        <span><?= isset($site) ? $itemSet->siteUrl($site->slug()) : $itemSet->adminUrl() ?></span>
+    </li>
+    <?php endif; ?>
+    <li class="breadcrumb-item"> <span><?= $escape($translate('Search')) ?></span></li>
+    </ol>
+</div>
+<?php endif; ?>
 
-<div class="container-fluid mt-4 mb-5">
+<div id=" search-page" class="container-fluid">
+    <?php endif; ?>
 
-    <?php if (empty($isPartial)): ?>
-    <div id="search-page">
-        <?php endif; ?>
+    <div class="container">
 
         <?php if ($itemSet): ?>
 
-        <div class="mb-5 container">
-            <!-- card -->
-            <div class="mb-4">
-                <?php echo $this->pageTitle($itemSet->displayTitle(), 3); ?>
-            </div>
-            <div class="mb-4">
-                <div class="metadata">
-                    <?php echo $itemSet->displayValues(); ?>
-                </div>
-            </div>
-            <div class="text-center">
-                <button id="openBtn"
-                    style="border-radius: 40px; <?= $page > 1 ? '' : 'display:none;' ?>>"
-                    class="btn btn-sm btn-dark"><?= $translate('メタデータを表示'); ?></button>
-                <button id="closeBtn"
-                    style="border-radius: 40px; <?= $page > 1 ? 'display:none;' : '' ?>"
-                    class="btn btn-sm btn-dark"><?= $translate('隠す'); ?></button>
-            </div>
-        </div>
-
         <?php
-    $vars->offsetSet('itemSet', $itemSet);
-    $vars->offsetSet('resourceType', 'item_sets'); // TODO Check if really needed.
-    $this->htmlElement('body')->appendAttribute('class', 'search-page item-set resource browse');
-    ?>
+        $vars->offsetSet('itemSet', $itemSet);
+        $vars->offsetSet('resourceType', 'item_sets'); // TODO Check if really needed.
+        $this->htmlElement('body')->appendAttribute('class', 'search-page item-set resource browse');
+        ?>
+        <?= $this->pageTitle($itemSet->displayTitle(null, $langTitle), 2) ?>
+        <h3><?= $translate('Item set') ?></h3>
+        <div class="metadata">
+            <?= $itemSet->displayValues() ?>
+        </div>
+        <div class="item-set-items">
+            <h3><?= $translate('Items') ?></h3>
+        </div>
 
         <?php else: ?>
 
         <?php $this->htmlElement('body')->appendAttribute('class', 'search-page resource browse'); ?>
+        <?= $this->pageTitle($translate('Search'), 2) ?>
 
         <?php endif; ?>
 
-        <div class="text-end">
-            <button style="border-radius: 40px;" id="toggleBtn" class="btn btn-sm btn-secondary px-3"
-                onClick="toggle()">
-                <i class="fa-solid fa-bars"></i>&nbsp;
-                <?= $translate('Advanced search') ?>
-            </button>
-        </div>
 
-        <div class="mb-4">
-            <div class="container closed" id="searchForm">
-                <div id="search"></div>
-                <?php
-                    $test = $this->searchForm($searchPage, null, $skipFormAction);
-                    /*
-                    //$test = str_replace('search-submit', "btn btn-primary", $test);
-                    $test = str_replace('id="submit"', 'id="submit" style="border-radius: 40px;" class="btn btn-primary"', $test);
-                    $test = str_replace('id="search-item-sets"', 'id="search-item-sets" class="mt-4"', $test);
-                    $test = str_replace('class="inputs', 'class="inputs mt-2"', $test);
-                    */
-                    /*
-                    $test = str_replace('for="q"', 'for="q" style="display: none;"', $test);
-                    $test = str_replace('class="autosuggest"', 'class="mt-4 autosuggest form-control" style="border-radius: 40px;"', $test);
-                    $test = str_replace('select', 'select class="form-select" style="border-radius: 40px;"', $test);
-                    */
-                    //$test = str_replace("autosuggest", "autosuggest", $test);
-                    //echo $test;
-                ?>
-            </div>
-        </div>
 
-        <?php if (isset($response)):
-$documentCount = $response->getTotalResults();
-?>
+        <?= $searchConfig->renderForm(['template' => null, 'skip_form_action' => $skipFormAction]) ?>
 
-        <div class="row">
-            <div class="col-md-3 col-12 mb-5">
-                <?= $partial('search/facets', [
-        'searchPage' => $searchPage,
+    </div>
+
+    <?php if (isset($response)): ?>
+
+    <div class="row my-4">
+        <div class="col-md-4">
+            <?= $partial('search/facets', [
+        'site' => $site,
+        'searchConfig' => $searchConfig,
+        'searchPage' => $searchConfig,
         'query' => $query,
         'response' => $response,
         'itemSet' => $itemSet,
     ]) ?>
-            </div>
-            <div class="col-md-9 col-12">
+        </div>
+        <div class="col-md-8">
+            <div>
+                <div>
 
-                <!-- start -->
-
-                <div id="resource-list-div" style="display: none;">
-
-                    <?php if ($documentCount):
-            $itemSetsCount = $response->getResourceTotalResults('item_sets');
-            $itemsCount = $response->getResourceTotalResults('items');
-            $displayParts = $searchPage->setting('display', []);
-            $displayPartsHeader = array_filter($displayParts, function ($v) {
-                return in_array($v, ['header', 'both']);
-            });
-            $displayPartsFooter = array_filter($displayParts, function ($v) {
-                return in_array($v, ['footer', 'both']);
-            });
-            ?>
+                    <?php if ($documentCount): ?>
 
                     <?php if ($displayPartsHeader): ?>
+                    <!-- search-results-part search-results-header -->
                     <div class="">
-                        <!-- search-results-part search-results-header -->
                         <?= $partial('search/results-header-footer', [
-                'searchPage' => $searchPage,
+                'site' => $site,
+                'searchConfig' => $searchConfig,
+                // Kept for compatibility with old themes.
+                'searchPage' => $searchConfig,
                 'query' => $query,
                 'response' => $response,
                 'itemSet' => $itemSet,
@@ -218,37 +181,40 @@ $documentCount = $response->getTotalResults();
                     </div>
                     <?php endif; ?>
 
-                    <div class="search-results-part search-results-list mt-4">
+                    <!-- search-results-part search-results-list -->
+                    <div class="">
                         <?php if ($itemSetsCount): ?>
-
                         <?= $partial('search/resource-list', [
                 'site' => $site,
-                'searchPage' => $searchPage,
+                'searchConfig' => $searchConfig,
+                'searchPage' => $searchConfig,
                 'query' => $query,
                 'response' => $response,
                 'title' => sprintf($translatePlural('%s item set', '%s item sets', $itemSetsCount), $itemSetsCount),
                 'resourceName' => 'item_sets',
             ]) ?>
-
                         <?php endif; ?>
+
                         <?php if ($itemsCount): ?>
                         <?= $partial('search/resource-list', [
                 'site' => $site,
-                'searchPage' => $searchPage,
+                'searchConfig' => $searchConfig,
+                'searchPage' => $searchConfig,
                 'query' => $query,
                 'response' => $response,
                 'title' => sprintf($translatePlural('%s item', '%s items', $itemsCount), $itemsCount),
                 'resourceName' => 'items',
             ]) ?>
                         <?php endif; ?>
-
                     </div>
 
                     <?php if ($displayPartsFooter): ?>
-                    <div class="mt-4">
-                        <!-- search-results-part search-results-footer -->
+                    <!-- search-results-part search-results-footer -->
+                    <div class="">
                         <?= $partial('search/results-header-footer', [
-                'searchPage' => $searchPage,
+                'site' => $site,
+                'searchConfig' => $searchConfig,
+                'searchPage' => $searchConfig,
                 'query' => $query,
                 'response' => $response,
                 'itemSet' => $itemSet,
@@ -260,15 +226,17 @@ $documentCount = $response->getTotalResults();
 
                     <?php else: ?>
 
-                    <div class="noresults">
+                    <!-- noresults -->
+                    <div class="">
                         <?php if (empty($query) && !$itemSet): ?>
                         <?= $translate('Fill a query and get results.') ?>
                         <?php elseif (empty($query) && $itemSet): ?>
                         <?= $translate('This item set has no items.') ?>
                         <?php else: ?>
-                        <?php if (in_array($searchPage->subSetting('display', 'search_filters', 'header'), ['header', 'both'])): ?>
-                        <div class="search-results-part search-results-header">
-                            <?= $this->searchingFilters($searchPage, $query, ['template' => 'common/search-filters-links']) ?>
+                        <?php if (in_array($searchConfig->subSetting('display', 'search_filters', 'header'), ['header', 'both'])): ?>
+                        <!-- search-results-part search-results-header -->
+                        <div class="">
+                            <?= $this->searchingFilters($searchConfig, $query, ['template' => 'common/search-filters-links']) ?>
                         </div>
                         <?php endif; ?>
                         <?= $translate('Your query returned no results') ?>
@@ -279,16 +247,22 @@ $documentCount = $response->getTotalResults();
 
                 </div>
 
-                <!-- end -->
+
             </div>
         </div>
 
+
+
+
         <?php else: ?>
 
-        <div class="search-results-wrapper">
-            <div class="search-results">
-                <div class="noresults"><?= $translate('An error occured and your query returned no results.') ?>
-                </div>
+        <!-- search-results-wrapper -->
+
+        <div class="">
+            <!-- search-results -->
+            <div class="">
+                <!-- noresults -->
+                <div class=""><?= $translate('An error occured and your query returned no results.') ?></div>
             </div>
         </div>
 
@@ -297,149 +271,3 @@ $documentCount = $response->getTotalResults();
         <?php if (empty($isPartial)): ?>
     </div>
     <?php endif; ?>
-
-</div>
-
-<script>
-    function toggle() {
-        let e = $("#searchForm")
-        let btn = $("#toggleBtn")
-        if (e.hasClass("closed")) {
-            e.removeClass("closed")
-            btn.removeClass("btn-secondary").addClass("btn-primary")
-        } else {
-            e.addClass("closed")
-            btn.removeClass("btn-primary").addClass("btn-secondary")
-        }
-    }
-
-    function createElementFromHTML(htmlString) {
-        var div = document.createElement('div');
-        div.innerHTML = htmlString.trim();
-        return div.firstChild;
-    }
-
-    let div = createElementFromHTML(`<?= $test; ?>`)
-    $(div).find(".form-search").removeClass("form-search")
-
-
-    let fields = $(div).find(".field")
-
-    for (let field of fields) {
-        if ($(field).find(".search-submit").length > 0) {
-            fixSearchBtn(field)
-        } else if ($(field).find("#q").length > 0) {
-            fixFullTextSearch(field)
-        } else {
-
-        }
-    }
-
-
-    let fieldsets = $(div).find("fieldset")
-
-    for (let fieldset of fieldsets) {
-        let id = $(fieldset).attr("id")
-        if (id === "search-item-sets") {
-            fixSearchItemSets(fieldset)
-        } else if (id === "search-filters") {
-            fixFilters(fieldset)
-        }
-    }
-
-    $("#search").append(div)
-
-    function fixSearchItemSets(div) {
-        $(div).find(".field-meta").addClass("mb-2")
-        $(div).find("select").addClass("form-select mb-4").attr("size", 3).removeClass("chosen-select").show()
-    }
-
-    function fixFilters(div) {
-        $(div).attr("id", "")
-
-        //legend
-        let legend = $(div).find("legend")
-        let text = legend.text()
-        let d = $("<div class='mb-2'>")
-        d.append(text)
-        $(legend).after(d)
-        $(legend).remove()
-
-        let fieldsets = $(div).find("fieldset")
-
-        for (let fieldset of fieldsets) {
-            $(fieldset).removeClass("filter").addClass("row mb-2")
-
-            let selects = $(fieldset).find("select")
-            for (let select of selects) {
-                let col = $("<div class='col-auto mb-1'></div>")
-
-                let $select = $(select)
-                $select.before(col)
-                col.append($select)
-                $select.addClass("form-select").css("border-radius", "40px")
-            }
-
-            let inputs = $(fieldset).find("input")
-            for (let input of inputs) {
-                let col = $("<div class='col-md col-auto mb-1'></div>")
-                let $input = $(input)
-                $input.before(col)
-                col.append($input)
-                $input.addClass("form-control").css("border-radius", "40px")
-            }
-        }
-    }
-
-    function fixFullTextSearch(div) {
-        $(div).find(".field-meta").remove()
-
-        let input = $(div).find("input")
-        input.addClass("form-control my-4")
-        input.removeClass("autosuggest")
-        input.attr("placeholder", "検索キーワードを入力")
-        input.css("border-radius", "40px")
-    }
-
-    function fixSearchBtn(div) {
-        $(div).find(".field-meta").remove()
-
-        $(div).find(".inputs").addClass("text-center mt-4 mb-5")
-
-        let btn = $(div).find("button")
-        btn.addClass("btn btn-primary m-1")
-        btn.css("border-radius", "40px")
-
-        let reset = $("<button>")
-        btn.before(reset)
-        reset.attr("type", "button")
-        reset.addClass("btn btn-dark m-1")
-        reset.on('click', function() {
-            $(this.form).find("select, input").val("").end().find(":checked").prop("checked", false);
-        });
-        reset.css("border-radius", "40px")
-        reset.append("検索条件のリセット")
-
-
-        let close = $("<button>")
-        close.attr("type", "button")
-        reset.before(close)
-        close.addClass("btn btn-dark m-1")
-        close.on('click', function() {
-            toggle()
-        });
-        close.css("border-radius", "40px")
-        close.append("検索条件を閉じる")
-    }
-
-
-    window.onload = function() {
-        $("#resource-list-div").show()
-    }
-</script>
-</script>
-<style>
-    .closed {
-        display: none;
-    }
-</style>
